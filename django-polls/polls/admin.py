@@ -3,7 +3,6 @@ from .models import Choice, Question
 from django.utils import timezone
 import datetime
 
-
 class ChoiceInline(admin.TabularInline):
     model = Choice
     extra = 3
