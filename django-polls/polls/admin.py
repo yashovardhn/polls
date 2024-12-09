@@ -26,5 +26,4 @@ class QuestionAdmin(admin.ModelAdmin):
         now = timezone.now()
         return now - datetime.timedelta(days=1) <= obj.pub_date <= now
 
-
 admin.site.register(Question, QuestionAdmin)
