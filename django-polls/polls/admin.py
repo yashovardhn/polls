@@ -25,4 +25,5 @@ class QuestionAdmin(admin.ModelAdmin):
     def was_published_recently(self, obj):
         now = timezone.now()
         return now - datetime.timedelta(days=1) <= obj.pub_date <= now
+        
 admin.site.register(Question, QuestionAdmin)
