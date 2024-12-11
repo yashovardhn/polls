@@ -1,50 +1,62 @@
-from PIL import Image, ImageOps
 import os
+import logging
+from PIL import Image, ImageOps, ImageFilter
+from glob import glob  # for finding all images in a directory
 
-# File paths for the uploaded images
-file_paths = [
-    "/Users/yashovardhn/Downloads/300x300 (300 x 300 px) (12).png", 
-    "/Users/yashovardhn/Downloads/300x300 (300 x 300 px) (17).png", 
-    "/Users/yashovardhn/Downloads/300x300 (300 x 300 px) (15).png", 
-    "/Users/yashovardhn/Downloads/300x300 (300 x 300 px) (16).png", 
-    "/Users/yashovardhn/Downloads/300x300 (300 x 300 px) (14).png", 
-    "/Users/yashovardhn/Downloads/300x300 (300 x 300 px) (13).png",
-    "/Users/yashovardhn/Downloads/300x300 (300 x 300 px) (11).png",
-]
+# Configure logging
+logging.basicConfig(filename='image_processing.log', level=logging.INFO)
 
-# Directory to save processed images
-output_directory = "/Users/yashovardhn/Documents/PWC Adworks/"
+# Function to check if a file is a valid image
+def is_valid_image(filepath):
+    if not os.path.isfile(filepath):
+        logging.warning(f"File not found: {filepath}")
+        return False
+    _, ext = os.path.splitext(filepath)
+    return ext.lower() in ('.png', '.jpg', '.jpeg')
 
-# Function to convert the image to white logos on transparent background
-def process_image(file_path):
-    # Open the image
-    img = Image.open(file_path).convert("RGBA")
-    
-    # Invert image to make the content white
-    inverted_img = ImageOps.invert(img.convert("RGB"))
-    inverted_img = inverted_img.convert("RGBA")
-    
-    # Make the background transparent
-    data = inverted_img.getdata()
-    new_data = []
-    for item in data:
-        if item[:3] == (255, 255, 255):  # Check for white areas
-            new_data.append((255, 255, 255, 0))  # Make them transparent
-        else:
-            new_data.append((255, 255, 255, item[3]))  # Keep original transparency
-    inverted_img.putdata(new_data)
-    
-    # Save the processed image to the specified directory
-    filename = os.path.basename(file_path)
-    output_path = os.path.join(output_directory, "processed_" + filename)
-    inverted_img.save(output_path, 'PNG', quality=95)
-    
-    return inverted_img
+# Function to process the image
+def process_image(filepath):
+    try:
+        img = Image.open(filepath).convert("RGBA")
+        inverted_img = ImageOps.invert(img.convert("RGB")).convert("RGBA")
+
+        data = inverted_img.getdata()
+        new_data = []
+        for item in data:
+            if item[:3] == (255, 255, 255):
+                new_data.append((255, 255, 255, 0))
+            else:
+                new_data.append((255, 255, 255, item[3]))
+        inverted_img.putdata(new_data)
+
+        sharpened_img = inverted_img.filter(ImageFilter.UnsharpMask(radius=2, percent=300, threshold=3))
+        sharpened_img = sharpened_img.filter(ImageFilter.UnsharpMask(radius=2, percent=300, threshold=3))
+
+        filename = os.path.basename(filepath)
+        output_path = os.path.join(output_directory, "processed_" + filename)
+        sharpened_img.save(output_path, 'PNG', quality=95)
+
+        logging.info(f"Successfully processed image: {filepath}")
+        return output_path
+    except Exception as e:
+        logging.error(f"Error processing image: {filepath} - {e}")
+        return None
+
+# Get user input for image directory or use a default path
+image_dir = input("Enter directory containing images (or leave blank for default): ") or "/Users/yashovardhn/Downloads/"
+
+# Find all image files in the directory
+image_paths = glob(os.path.join(image_dir, "*.+(png|jpg|jpeg)"))
+
+# Define the output directory
+output_directory = "/Users/yashovardhn/Documents/PWC Adworks"
 
 # Process each image and save the results
 output_paths = []
-for i, path in enumerate(file_paths):
-    output_path = process_image(path)
-    output_paths.append(output_path)
+for path in image_paths:
+    if is_valid_image(path):
+        output_path = process_image(path)
+        if output_path:
+            output_paths.append(output_path)
 
-output_paths
+print(f"Processed images saved to: {output_directory}")
