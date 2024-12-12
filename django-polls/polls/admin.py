@@ -6,7 +6,7 @@ import datetime
 class ChoiceInline(admin.TabularInline):
     model = Choice
     extra = 3
-    
+
 class QuestionAdmin(admin.ModelAdmin):
     fieldsets = [
         (None, {"fields": ["question_text"]}),
