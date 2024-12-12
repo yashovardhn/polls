@@ -17,7 +17,6 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ["pub_date"]
     search_fields = ["question_text"]
 
-
     @admin.display(
         boolean=True,
         ordering="pub_date",
