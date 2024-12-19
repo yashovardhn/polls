@@ -5,7 +5,6 @@ from django.utils import timezone
 from django.urls import reverse
 from .models import Question
 
-
 def create_question(question_text, days):
     """
     Create a question with the given `question_text` and published the
